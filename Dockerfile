@@ -37,3 +37,11 @@ ENV TARGETPOD=""
 #
 ENV LOG_LEVEL="info"
 
+#
+# LOG_STATUS_CHANGE to trigger status change logging
+# true or false
+#
+# default="true"
+#
+ENV LOG_STATUS_CHANGE="true"
+
