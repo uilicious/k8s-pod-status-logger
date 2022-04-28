@@ -38,9 +38,12 @@ kubernetes:
     nameSelector:
       matchNames: ["${NAMESPACE}"]
   #
-  # Limit filtering to changes in ready states (stored in conditions[1])
+  # Limit filtering to changes in "state"
+  # note that i suspect this is done on the shell-operator
+  # side (not the k8s cluster) so its effectiveness is
+  # questionable - but better then nothing
   #
-  jqFilter: ".status.conditions[1].status"
+  jqFilter: ".status.containerStatuses[0].state.terminated"
 EOF
 # Exit immediately, after outputting the config
 exit 0
@@ -71,31 +74,57 @@ if [[ -z "$TARGETPOD" ]]; then
 else
   if [[ "$POD_NAME" =~ "$TARGETPOD" ]]; then
     # TARGETPOD matches, we shall permit this event
-		  :
+		:
   else
     # TARGETPOD does not match, we should skip this event
+    if [ "$DEBUG" = "true" ] ; then
+      echo "DEBUG - skipping ${POD_NAME} as it does not match TARGETPOD regex : ${TARGETPOD}"
+    fi
     exit 0
   fi
 fi
 
-# SEE POD CONDITIONS FROM OFFICIAL DOC
-# https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/
-INIT=$(echo "$JSON_OBJ_STR" | jq -r '.status.conditions[0].status')
-# 
-READY=$(echo "$JSON_OBJ_STR" | jq -r '.status.conditions[1].status')
-READY_MESSAGE=$(echo "$JSON_OBJ_STR" | jq -r '.status.conditions[1].message')
-READY_REASON=$(echo "$JSON_OBJ_STR" | jq -r '.status.conditions[1].reason')
-# 
-CONTAINER_READY=$(echo "$JSON_OBJ_STR" | jq -r '.status.conditions[2].status')
-#CONTAINER_READY_MESSAGE=$(echo "$JSON_OBJ_STR" | jq -r '.status.conditions[2].message')
-#CONTAINER_READY_REASON=$(echo "$JSON_OBJ_STR" | jq -r '.status.conditions[2].reason')
-# 
-PODSCHEDULED=$(echo "$JSON_OBJ_STR" | jq -r '.status.conditions[3].status')
+# Get the terminated exit code and reason
+TERMINATED_EXITCODE=$(echo "$JSON_OBJ_STR" | jq -r '.status.containerStatuses[0].state.terminated.exitCode')
+TERMINATED_REASON=$(echo "$JSON_OBJ_STR" | jq -r '.status.containerStatuses[0].state.terminated.reason')
 
-#READY status only include message if false, let's avoid confusing someone by printing null
-# IF STATUS LOGS AREN'T SHOWING UP MAKE SURE LOG_LEVEL IS SET TO "INFO"
-if [[ "$READY" = "False" ]]; then
-  echo "STATUS UPDATE ${POD_NAME} - INIT IS ${INIT} | READY IS ${READY} - ${READY_MESSAGE} : ${READY_REASON} | CONTAINER READY IS ${CONTAINER_READY} | POD SCHEDULED IS ${PODSCHEDULED} "
-else 
-  echo "STATUS UPDATE ${POD_NAME} - INIT IS ${INIT} | READY IS ${READY} | CONTAINER READY IS ${CONTAINER_READY} | POD SCHEDULED IS ${PODSCHEDULED} "
+# Fallback to "lastState", this can happen if the contianer is started "quickly"
+# before the event is properlly handled - and/or - the original event was missed
+if [[ -z "$TERMINATED_EXITCODE" ]] || [[ "$TERMINATED_EXITCODE" == "null" ]]; then
+  TERMINATED_EXITCODE=$(echo "$JSON_OBJ_STR" | jq '.status.containerStatuses[0].lastState.terminated.exitCode')
+  TERMINATED_REASON=$(echo "$JSON_OBJ_STR" | jq '.status.containerStatuses[0].lastState.terminated.reason')
 fi
+
+# If there is no exitcode / reason, we presume its a misfied event
+# so we shall ignore it
+if [[ -z "$TERMINATED_EXITCODE" ]] || [[ "$TERMINATED_EXITCODE" == "null" ]]; then
+  exit 0
+fi
+
+# Special handling of exit code 0
+if [[ "$APPLY_ON_EXITCODE_0" != "true" ]]; then
+  # Check if exit code is 0, skip it
+  if [[ "$TERMINATED_EXITCODE" == "0" ]]; then
+    # DEBUG log the container that was skipped
+    if [ "$DEBUG" = "true" ] ; then
+      echo "DEBUG - skipping ${podName} with exitcode 0 ( APPLY_ON_EXITCODE_0 != true )"
+    fi
+    exit 0
+  fi
+fi
+
+#
+# We are here, lets do the termination event !
+#
+
+# Lets handle debug mode
+if [ "$DEBUG" = "true" ] ; then
+	echo "DEBUG - would have terminated ${POD_NAME} which completed with exitcode ${TERMINATED_EXITCODE} : ${TERMINATED_REASON}"
+	exit 0
+fi
+
+# Lets perform the termination event
+echo "ACTION - terminating ${POD_NAME} which completed with exitcode ${TERMINATED_EXITCODE} : ${TERMINATED_REASON}"
+kubectl delete pod --wait=false $POD_NAME 
+
+#-----------------------------------------------------------------------------------------
