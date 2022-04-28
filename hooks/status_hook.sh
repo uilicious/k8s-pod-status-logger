@@ -23,7 +23,7 @@ cat <<EOF
 configVersion: v1
 kubernetes:
 - apiVersion: v1
-  kind: Pod
+  kind: Event
   # 
   # Because the modified event is extreamly verbose,
   #(especially with healthcheck, which updates it every X seconds)
@@ -54,7 +54,7 @@ cat <<EOF
 configVersion: v1
 kubernetes:
 - apiVersion: v1
-  kind: Pod
+  kind: Event
   executeHookOnEvent:
   - Deleted
   # 
