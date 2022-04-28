@@ -17,16 +17,15 @@
 # the defined filters
 #
 #-----------------------------------------------------------------------------------------
-if [[ "$LOG_STATUS_CHANGE" = "true" ]]; then
-  if [[ $1 == "--config" ]] ; then
+if [[ $1 == "--config" ]] ; then
 cat <<EOF
 configVersion: v1
 kubernetes:
 - apiVersion: v1
-  kind: Event
+  kind: Pod
   # 
   # Because the modified event is extreamly verbose,
-  #(especially with healthcheck, which updates it every X seconds)
+  # (especially with healthcheck, which updates it every X seconds)
   # when possible we will add upfront any filters we can
   # use to reduce the amount of "modified" events
   #
@@ -43,32 +42,9 @@ kubernetes:
   #
   jqFilter: ".status.conditions[1].status"
 EOF
-  # Exit immediately, after outputting the config
-  exit 0
-  fi
-# Even if we don't want the hook to trigger shell operator hooks needs a config, 
-# Let's just add one that will never trigger.
-else
-  if [[ $1 == "--config" ]] ; then
-cat <<EOF
-configVersion: v1
-kubernetes:
-- apiVersion: v1
-  kind: Event
-  executeHookOnEvent:
-  - Deleted
-  # 
-  # Limit filtering to the empty namespace so it doesn't trigger
-  #
-  namespace:
-    nameSelector:
-      matchNames: ["hookwillnottrigger"]
-EOF
-  # Exit immediately, after outputting the config
-  exit 0
-  fi
+# Exit immediately, after outputting the config
+exit 0
 fi
-
 #-----------------------------------------------------------------------------------------
 #-----------------------------------------------------------------------------------------
 #
