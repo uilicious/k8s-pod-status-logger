@@ -1,12 +1,12 @@
 FROM flant/shell-operator:latest
 
-
+# Adding alpine coreutils, this is required for some bash script utilities
+# like the date command to work as expected
+RUN apk add --update coreutils
 
 # Add the pods-hook file, and entrypoint script
 ADD hooks /hooks
 RUN chmod 755 /hooks/*.sh && chmod +x /hooks/*.sh
-
-CMD []
 
 #
 # Environment variables for usage
@@ -44,7 +44,7 @@ ENV DEBUG="false"
 #
 # default="error"
 #
-ENV LOG_LEVEL="error"
+ENV LOG_LEVEL="info"
 
 #
 # Enable the use of the main shell-operator workflow
