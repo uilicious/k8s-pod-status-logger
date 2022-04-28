@@ -11,8 +11,8 @@ RUN chmod 755 /hooks/*.sh && chmod +x /hooks/*.sh && \
     chmod 755 /operator/*.sh && chmod +x /operator/*.sh
 
 # Trigger the entrypoint script
-ENTRYPOINT ["/sbin/tini", "--", "/operator/entrypoint.sh"]
-CMD []
+#ENTRYPOINT ["/sbin/tini", "--", "/operator/entrypoint.sh"]
+#CMD []
 
 #
 # Environment variables for usage
@@ -44,4 +44,3 @@ ENV LOG_LEVEL="info"
 # default="true"
 #
 ENV LOG_STATUS_CHANGE="true"
-
