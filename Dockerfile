@@ -6,7 +6,13 @@ RUN apk add --update coreutils
 
 # Add the pods-hook file, and entrypoint script
 ADD hooks /hooks
-RUN chmod 755 /hooks/*.sh && chmod +x /hooks/*.sh
+ADD operator /operator
+RUN chmod 755 /hooks/*.sh && chmod +x /hooks/*.sh && \
+    chmod 755 /operator/*.sh && chmod +x /operator/*.sh
+
+# Trigger the entrypoint script
+ENTRYPOINT ["/sbin/tini", "--", "/operator/entrypoint.sh"]
+CMD []
 
 #
 # Environment variables for usage
@@ -64,7 +70,7 @@ ENV SHELL_OPERATOR_ENABLE="true"
 #
 # default="true"
 #
-ENV KUBECTL_FALLBACK_ENABLE="true"
+ENV KUBECTL_FALLBACK_ENABLE="false"
 
 #
 # Polling interval to wait bewtween scans, note that actual interval
