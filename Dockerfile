@@ -30,10 +30,27 @@ ENV NAMESPACE="example-monitor-events"
 ENV TARGETPOD=""
 
 #
+# Delegate hook stdout/ stderr JSON logging to the hooks
+# and act as a proxy that adds some extra fields before just printing the output.
+# NOTE: It ignores LOG_TYPE for the output of the hooks; 
+# expects JSON lines to stdout/ stderr from the hooks
+#
+# Doesn't seem to work ? See link below
+# https://github.com/flant/shell-operator/pull/383
+#
+ENV LOG_PROXY_HOOK_JSON="false"
+
+#
+#Logging formatter type: json, text or color.
+#
+# default is json
+ENV LOG_TYPE="json"
+
+#
 # LOG_LEVEL for the shell-operator, use either
 # debug, info, error
 #
-# default="error"
+# default="info"
 #
 ENV LOG_LEVEL="info"
 
