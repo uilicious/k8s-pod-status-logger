@@ -80,11 +80,11 @@ fi
 
 # SEE POD CONDITIONS FROM OFFICIAL DOC
 # https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/
-INIT=$(echo "$JSON_OBJ_STR" | jq -r '.status.conditions[0].status')
+#INIT=$(echo "$JSON_OBJ_STR" | jq -r '.status.conditions[0].status')
 # 
 READY=$(echo "$JSON_OBJ_STR" | jq -r '.status.conditions[1].status')
 READY_MESSAGE=$(echo "$JSON_OBJ_STR" | jq -r '.status.conditions[1].message')
-READY_REASON=$(echo "$JSON_OBJ_STR" | jq -r '.status.conditions[1].reason')
+#READY_REASON=$(echo "$JSON_OBJ_STR" | jq -r '.status.conditions[1].reason')
 # 
 CONTAINER_READY=$(echo "$JSON_OBJ_STR" | jq -r '.status.conditions[2].status')
 #CONTAINER_READY_MESSAGE=$(echo "$JSON_OBJ_STR" | jq -r '.status.conditions[2].message')
@@ -95,7 +95,7 @@ PODSCHEDULED=$(echo "$JSON_OBJ_STR" | jq -r '.status.conditions[3].status')
 #READY status only include message if false, let's avoid confusing someone by printing null
 # IF STATUS LOGS AREN'T SHOWING UP MAKE SURE LOG_LEVEL IS SET TO "INFO"
 if [[ "$READY" = "False" ]]; then
-  echo "STATUS UPDATE ${POD_NAME} - INIT IS ${INIT} | READY IS ${READY} - ${READY_MESSAGE} : ${READY_REASON} | CONTAINER READY IS ${CONTAINER_READY} | POD SCHEDULED IS ${PODSCHEDULED} "
+  echo "[POD_NAME]${POD_NAME}: [POD_READY]=${READY} [MESSAGE]=${READY_MESSAGE} [CONTAINER_READY]=${CONTAINER_READY} [POD_SCHEDULED]=${PODSCHEDULED} "
 else 
-  echo "STATUS UPDATE ${POD_NAME} - INIT IS ${INIT} | READY IS ${READY} | CONTAINER READY IS ${CONTAINER_READY} | POD SCHEDULED IS ${PODSCHEDULED} "
+  echo "[POD_NAME]${POD_NAME}: [POD_READY]=${READY} [CONTAINER_READY]=${CONTAINER_READY}[POD_SCHEDULED]=${PODSCHEDULED} "
 fi

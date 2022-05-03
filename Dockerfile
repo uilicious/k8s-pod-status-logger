@@ -19,7 +19,7 @@ CMD []
 #
 # This is required
 #
-ENV NAMESPACE=""
+ENV NAMESPACE="example-monitor-events"
 
 #
 # Regex rule, for matching against pod names
@@ -30,27 +30,20 @@ ENV NAMESPACE=""
 ENV TARGETPOD=""
 
 #
-# Perform termination of pods even if they exited
-# with an exit code of 0
-#
-# default="true"
-#
-ENV APPLY_ON_EXITCODE_0="true"
-
-#
-# DEBUG mode, when enabled, performs no actions and only does logging
-#
-# default="false"
-#
-ENV DEBUG="false"
-
-#
 # LOG_LEVEL for the shell-operator, use either
 # debug, info, error
 #
 # default="error"
 #
 ENV LOG_LEVEL="info"
+
+#
+# Disable timestamp logging if flag is present.
+# Useful when output is redirected to logging system that already adds timestamps.
+#
+# default = "false"
+#
+ENV LOG_NO_TIME="false"
 
 #
 # Enable the use of the main shell-operator workflow
@@ -60,47 +53,3 @@ ENV LOG_LEVEL="info"
 # default="true"
 #
 ENV SHELL_OPERATOR_ENABLE="true"
-
-#
-# Enable the inbuilt kubectl fallback behaviour
-# This uses kubectl on a polling basis, to apply the pod reaper rules
-# as such, it may potentially be delayed by the "polling interval" setting.
-#
-# This also introduces some advance behaviour, like terminating unhealthy nodes
-#
-# default="true"
-#
-ENV KUBECTL_FALLBACK_ENABLE="false"
-
-#
-# Polling interval to wait bewtween scans, note that actual interval
-# maybe significant longer if the kubectl commands are "slow"
-#
-# default="30s"
-#
-ENV KUBECTL_POLLING_INTERVAL="30s"
-
-#
-# Delay interval between pods, this help prevents the entire cluster from being deleted
-# and restarting at the same time, putting an excess strain on the scheduler
-#
-# default="10s"
-#
-ENV KUBECTL_POD_DELETION_WAIT="10s"
-
-#
-# Limit the terimantion of unhealthy nodes to be older then the stated time in minutes
-#
-# Minimum age is used to work around race conditions, where a pod is "unhealthy" at start
-#
-# default="5"
-#
-ENV KUBECTL_MIN_AGE_IN_MINUTES="5"
-
-#
-# Pre-emptively perform pod termination on unhelathy nodes older thant the stated min age
-# this helps quicken the overal pod termination, and replacement process.
-# 
-# default="false"
-#
-ENV KUBECTL_APPLY_ON_UNHEALTHY_NODES="false"
