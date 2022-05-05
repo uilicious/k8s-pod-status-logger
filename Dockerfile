@@ -44,7 +44,7 @@ ENV LOG_PROXY_HOOK_JSON="false"
 #Logging formatter type: json, text or color.
 #
 # default is json
-ENV LOG_TYPE="json"
+ENV LOG_TYPE="text"
 
 #
 # LOG_LEVEL for the shell-operator, use either
@@ -60,7 +60,7 @@ ENV LOG_LEVEL="info"
 #
 # default = "false"
 #
-ENV LOG_NO_TIME="false"
+ENV LOG_NO_TIME="true"
 
 #
 # Enable the use of the main shell-operator workflow
